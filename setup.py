@@ -15,12 +15,12 @@ requirements = parse_requirements('requirements.txt')
 
 #from distutils.core import setup, Extension
 from setuptools import setup, Extension
-from pysfmov import __version__
+from pyNNST import __version__
 setup(name='pyNNST',
       version=__version__,
-      author='Lorenzo Capponi,
+      author='Lorenzo Capponi',
       author_email='lorenzocapponi@outlook.it',
-      description='Module for reading ResearchIR SFMOV image sequences',
+      description='Definition of non-stationary index for time-series',
       url='https://github.com/LolloCappo/pyNNST',
       py_modules=['pyNNST'],
       long_description=readme,
