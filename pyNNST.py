@@ -79,14 +79,14 @@ def idns(signal, nsec, overlap, f_sample, conf):
     else:
         index = np.round(index,2)
         
-    var = (2 * N1 * N0 * (2 * N1 * N0-N)) / (N^2 * (N-1))
+    var = (2 * N1 * N0 * (2 * N1 * N0-N)) / (N**2 * (N-1))
     INTE1 = mean_val + conf * np.sqrt(var)
     INTE2 = mean_val - conf * np.sqrt(var)
     
     if Nr >= INTE2 and Nr <= INTE1:
-        R='Stationary signal'
+        R = 'Stationary signal'
     else:
-        R='Non-stationary signal'
+        R = 'Non-stationary signal'
 
     
     return index, R
