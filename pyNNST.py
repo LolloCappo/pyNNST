@@ -16,7 +16,8 @@ def idns(signal, nsec, overlap, f_sample, conf):
     
     Returns:
         index {float} -- index of non-stationarity [Non-stationary --> 0 ; Stationary --> 100]
-        R {string} -- Definition of stationarity or non-stationarity 
+        bns {boolean} --  True = Stationary [1]
+                          False = Non-stationary [0]
     """
 
     fftp = int(f_sample * nsec)
@@ -36,7 +37,7 @@ def idns(signal, nsec, overlap, f_sample, conf):
         stdv_cmp = np.append(stdv_cmp, np.std(cmp[:,i]))
     if L % dist != 0:
         res_cmp = signal[cls*dist+1:]
-        m_cmp = np.append(m_cmp,np.mean(res_cmp))
+        m_cmp = np.append(m_cmp, np.mean(res_cmp))
         stdv_cmp = np.append(stdv_cmp, np.std(res_cmp))
     else:
         pass
@@ -48,12 +49,12 @@ def idns(signal, nsec, overlap, f_sample, conf):
     pos = np.empty(0)
     neg = np.empty(0)
 
-    for i in range(0,stdv_cmp.shape[0]):
+    for i in range(0, stdv_cmp.shape[0]):
         if stdv_cmp[i] > boundUP or stdv_cmp[i] < boundDW:
-            run = np.append(run,1)
+            run = np.append(run, 1)
         else:
-            run = np.append(run,0)
-    for i in range(0,run.shape[0]):
+            run = np.append(run, 0)
+    for i in range(0, run.shape[0]):
         if run[i] == 1.:
             pos = np.append(pos, run[i])
         else:
@@ -72,7 +73,7 @@ def idns(signal, nsec, overlap, f_sample, conf):
         
     mean_val = (2 * N1 * N0)/N+1
 
-    index=100*Nr/mean_val 
+    index = 100*Nr/mean_val 
 
     if index > 100:
         index = 100
@@ -84,9 +85,9 @@ def idns(signal, nsec, overlap, f_sample, conf):
     INTE2 = mean_val - conf * np.sqrt(var)
     
     if Nr >= INTE2 and Nr <= INTE1:
-        R = 'Stationary signal'
+        bns = True # Stationary signal
     else:
-        R = 'Non-stationary signal'
+        bns = False # Non-stationary signal
 
     
-    return index, R
+    return index, bns
