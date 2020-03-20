@@ -2,7 +2,7 @@ __version__ = '0.1'
 
 import numpy as np
 
-def idns(signal, nsec, overlap, f_sample, confidence = 95):
+def idns(signal, nsec, overlap, f_sample, confidence):
 
     """
     Function to determine the index of non-stationarity of a time series:
