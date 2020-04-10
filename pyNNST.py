@@ -15,15 +15,15 @@ def idns(signal, nsec, overlap, f_sample, confidence):
         confidence {int} -- Confidence: 90% - 95% - 98% - 99% - {Default 95(%)}
     
     Returns:
-    Dictionary: 
-        index {float} -- Index of non-stationarity [Non-stationary --> 0 ; Stationary --> 100]
-        bns {boolean} -- 0 --> Non-Stationary 
-                         1 --> Stationary
-        ind_up {float} -- Upper limit of stationary [%]
-        ind_dw {float} -- Lower limit of stationary [%]
-        nsec {float} -- Time lenght of moving window
-        overlap {float} -- Overlap between windows [0 - 1]
-        confidence {int} -- Confidence: 90% - 95% - 98% - 99% - {Default 95(%)}
+        Dictionary: 
+            index {float} -- Index of non-stationarity [Non-stationary --> 0 ; Stationary --> 100]
+            bns {boolean} -- 0 --> Non-Stationary 
+                            1 --> Stationary
+            ind_up {float} -- Upper limit of stationary [%]
+            ind_dw {float} -- Lower limit of stationary [%]
+            nsec {float} -- Time lenght of moving window
+            overlap {float} -- Overlap between windows [0 - 1]
+            confidence {int} -- Confidence: 90% - 95% - 98% - 99% - {Default 95(%)}
     """
 
     
