@@ -34,7 +34,7 @@ def idns(signal, nsec, sampling_freq, overlap, confidence, plot_res):
     ## Windowing
     T = len(signal) / sampling_freq - 1 / sampling_freq
     time = np.linspace(0, T, len(signal))
-    ent_stdv = np.std(signal, ddof = 0) # Standard deviation of entire signal
+    ent_stdv = np.std(signal, ddof = 1) # Standard deviation of entire signal
     w_point = int(sampling_freq * nsec) # Number of point for each window
     lap = int(w_point * overlap)        # Number of point overlapped
     L = len(signal)                     # length of the signal
@@ -53,7 +53,7 @@ def idns(signal, nsec, sampling_freq, overlap, confidence, plot_res):
         res_cmp = signal[cmp*dist+1:]
         stdv = np.append(stdv, np.std(res_cmp, ddof = 1))
     
-    cls_std = np.std(stdv, ddof = 0)
+    cls_std = np.std(stdv, ddof = 1)
 
     boundUP = ent_stdv + cls_std
     boundDW = ent_stdv - cls_std
