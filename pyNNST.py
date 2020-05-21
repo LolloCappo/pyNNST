@@ -1,123 +1,126 @@
-__version__ = '0.2'
+__version__ = '0.3'
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-def idns(signal, nsec, sampling_freq, overlap, confidence, plot_res):
-
-    """
-    Function to determine the index of non-stationarity of a time series:
+class idns:
+    def __init__(self, signal, nsec, sampling_freq, overlap, confidence):
+        self.signal = signal
+        self.nsec = nsec
+        self.sampling_freq = sampling_freq
+        self.overlap = overlap
+        self.confidence = confidence
         
-    Arguments:
-        signal {numpy array} --  Numpy array of the time series
-        nsec {float} -- Time lenght of moving window (minimum value = 2/sampling_freq)
-        sampling_freq {int} -- Sampling frequency of the time series
-        overlap {float} -- Overlap between windows [0 - 1]
-        confidence {int} -- Confidence: 90% - 95% - 98% - 99% 
-        plot_res {boolean} -- True for plot results, False for no plot
+        if self.nsec < 2/self.sampling_freq:
+            print('Error: nsec should be at least twice the inverse of sampling frequency')
+            return None
+        
+        self.N_pts = len(self.signal)
+        self.dt = 1/self.sampling_freq            
+        self.T = self.N_pts * self.dt - self.dt             
+        self.time = np.linspace(0, self.T, self.N_pts)
+        self.ent_std = np.std(self.signal, ddof = 1) 
+        self.ent_mean = np.mean(self.signal)        
+        coeff = [1.645, 1.96, 2.326, 2.576]
+        conf = [90, 95, 98, 99]
+        self.alpha = coeff[conf.index(self.confidence)]
+        self.data_base = {'N_pts':self.N_pts,
+                          'time':self.time,
+                          'std':self.ent_std,
+                          'mean':self.ent_mean,
+                          'alpha':self.alpha}
+        
+        wdw_pts = int(np.floor(self.sampling_freq * self.nsec)) 
+        seg_pts = wdw_pts - int(np.floor(wdw_pts * self.overlap)) 
+        seg = int(np.ceil(self.N_pts / seg_pts))                  
+        self.seg_time = np.linspace(0,self.T,seg)
+        res = self.N_pts % seg_pts      
+        cls = np.array([self.signal[i:i + seg_pts] for i in range(0, self.N_pts-res, seg_pts)])
+
+        self.seg_std = np.std(cls, axis=1, ddof=1)
+
+        if self.N_pts % seg_pts != 0:
+            seg_res = signal[self.N_pts - res:self.N_pts]
+            seg_res_std = np.std(seg_res,ddof=1)
+            self.seg_std = np.append(self.seg_std,seg_res_std)
     
-    Returns:
-        Dictionary: 
-            index {float} -- Index of non-stationarity
-                             0 [%] --> Non-stationary
-                             100 [%] --> Stationary
-            bns {string} -- Stationary or non-stationary
-            ind_dw {float} -- Lower limit of stationary [%]
-            ind_up {float} -- Upper limit of stationary [%]
-    """
+        cls_std = np.std(self.seg_std, ddof = 1)
+    
+        self.boundUP = self.ent_std + cls_std
+        self.boundDW = self.ent_std - cls_std
+        
+        rn = np.empty(seg)
+        for i in range(0, seg):
+            if self.seg_std[i] > self.boundUP or self.seg_std[i] < self.boundDW:
+                rn[i] = 1
+            else:
+                rn[i] = 0
+
+        N1 = N0 = 0
+        for i in range(0, seg):
+            if rn[i] == 1.:
+                N1 += 1
+            else:
+                N0 += 1
+        
+        N = N1 + N0
+        self.Nr = 0
+
+        for i in range(1, seg):
+            if rn[i] != rn[i-1]:
+                self.Nr += 1
+        
+        ## Stationary limits 
+        if N == 0 or N == 1:
+            print('Error: check window length')
+            return None 
+        
+        self.run_mean = (2 * N1 * N0) / N + 1
+        self.run_var = (2 * N1 * N0 * (2 * N1 * N0 - N)) / (N**2 * (N - 1))
+        
+        self.run = {'run': self.Nr, 'run_mean': self.run_mean, 'run_var': self.run_var}
+        
+        self.lim_up = self.run_mean + self.alpha * np.sqrt(self.run_var)
+        self.lim_dw = self.run_mean - self.alpha * np.sqrt(self.run_var)
+
+        self.index_up = np.round(100 * self.lim_up / self.run_mean, 2)
+        self.index_dw = np.round(100 * self.lim_dw / self.run_mean, 2)
+        
+        if self.Nr >= self.lim_dw and self.Nr <= self.lim_up:   
+            self.bns = 'Stationary'
+        else:
+            self.bns = 'Non-stationary' 
             
-    ## Confidence interval
-    coeff = [1.645, 1.96, 2.326, 2.576]
-    conf = [90, 95, 98, 99]
-    alpha = coeff[conf.index(confidence)]
-
-    ## Windowing
-    T = len(signal) / sampling_freq - 1 / sampling_freq
-    time = np.linspace(0, T, len(signal))
-    ent_stdv = np.std(signal, ddof = 1) # Standard deviation of entire signal
-    w_point = int(sampling_freq * nsec) # Number of point for each window
-    lap = int(w_point * overlap)        # Number of point overlapped
-    L = len(signal)                     # length of the signal
-    dist = w_point - lap                # Number of point for each compartment
-    cmp = int(np.floor(L / dist))       # Number of compartment
-
-    ## Boundaries
-    stdv = np.empty(cmp)
-    cls = np.empty((cmp, dist))
-
-    for i in range(0,cmp):
-        cls[i] = signal[i*dist:i*dist+dist]
-        stdv[i] = np.std(cls[i], ddof = 1)
+        self.index = np.round( 100 * self.Nr / self.run_mean, 2)
         
-    if L % dist != 0:
-        res_cmp = signal[cmp*dist+1:]
-        stdv = np.append(stdv, np.std(res_cmp, ddof = 1))
     
-    cls_std = np.std(stdv, ddof = 1)
-
-    boundUP = ent_stdv + cls_std
-    boundDW = ent_stdv - cls_std
-
-
-    ## Run computation
-    run = np.empty(0)
-    N1 = 0
-    N0 = 0
-
-    for i in range(0, stdv.shape[0]):
-        if stdv[i] > boundUP or stdv[i] < boundDW:
-            run = np.append(run, 1)
-        else:
-            run = np.append(run, 0)
-
-    for i in range(0, len(run)):
-        if run[i] == 1.:
-            N1 += 1
-        else:
-            N0 += 1
+    def get_base(self):
+        return self.data_base
         
-    N = N1 + N0
-    Nr = 0
+    def get_run(self):        
+        return self.run
+        
+    def get_limits(self):
+        return [self.index_dw, self.index_up]
 
-    for i in range(1, len(run)):
-        if run[i] != run[i-1]:
-            Nr += 1
-
-    ## Stationary limits 
-    mean_val = (2 * N1 * N0) / N + 1
-    var = (2 * N1 * N0 * (2 * N1 * N0 - N)) / (N**2 * (N - 1))
-
-    lim_up = mean_val + alpha * np.sqrt(var)
-    index_up = np.round(100 * lim_up / mean_val, 3)
-    lim_dw = mean_val - alpha * np.sqrt(var)
-    index_dw = np.round(100 * lim_dw / mean_val, 3)
-
-    if Nr >= lim_dw and Nr <= lim_up:   
-        bns = 'Stationary'
-    else:
-        bns = 'Non-stationary' 
+    def get_bns(self):
+        return self.bns
     
-    ## Index of non-stationary
-    index = 100 * Nr / mean_val  
-    if index > 100:
-        index = 100
-    else:
-        index = np.round(index,2)
+    def get_index(self):
+        return self.index
     
-    nnst = {'index': index, 'bns':bns, 'ind_dw':index_dw, 'ind_up':index_up}
-
-    if plot_res == True:
-        plt.figure()
-        plt.plot(time,signal, color = 'darkgray', zorder = 2, label = 'Signal')
-        plt.hlines(np.mean(signal)+ent_stdv, 0, T, colors='C1', linestyles='solid', zorder = 4, label = 'Standard deviation')
-        plt.plot(np.linspace(0,T,len(stdv)),np.mean(signal)+stdv, color = 'C0', zorder = 3, label = 'Standard deviation windows')
-        plt.hlines(np.mean(signal) + boundUP, 0, T, colors='C3', linestyles='dashed', zorder = 5, label = 'Boundaries')
-        plt.hlines(np.mean(signal) + boundDW, 0, T, colors='C3', linestyles='dashed', zorder = 6)
-        plt.legend(loc=4)
-        plt.grid(zorder = 1)
-        plt.xlim([0,T])
-        plt.xlabel('Time [s]')
-        plt.ylabel('Amplitude [\]')
+    def get_plot(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.plot(self.time, self.signal, color = 'darkgray', zorder = 1, label = 'Signal')
+        ax.plot(self.seg_time, self.ent_mean + self.seg_std, color = 'C0', zorder = 2, label = 'Segments STD')
+        ax.hlines(self.ent_mean + self.ent_std, 0, self.T+self.dt, colors='C1', linestyles='solid', zorder = 3, label = 'STD')
+        ax.hlines(self.ent_mean + self.boundUP, 0, self.T+self.dt, colors='C3', linestyles='dashed', zorder = 4, label = 'Boundaries')
+        ax.hlines(self.ent_mean + self.boundDW, 0, self.T+self.dt, colors='C3', linestyles='dashed', zorder = 5)
+        ax.legend(loc=4)
+        ax.grid()
+        ax.set_xlim([0,self.T+self.dt])
+        ax.set_xlabel('Time [s]')
+        ax.set_ylabel('Amplitude [\]')
+        ax.set_title('Index: '+str(self.index) + '%\n' + self.bns)
         plt.show()
-        
-    return nnst
