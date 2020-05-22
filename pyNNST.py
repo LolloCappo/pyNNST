@@ -15,6 +15,7 @@ class idns:
             print('Error: nsec should be at least twice the inverse of sampling frequency')
             return None
         
+    def calc(self):
         self.N_pts = len(self.signal)
         self.dt = 1/self.sampling_freq            
         self.T = self.N_pts * self.dt - self.dt             
