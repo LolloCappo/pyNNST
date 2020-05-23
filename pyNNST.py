@@ -5,13 +5,24 @@ import matplotlib.pyplot as plt
 
 class idns:
     def __init__(self, signal, nsec, sampling_freq, overlap, confidence):
-        """
-        Class idns:
+        """        
+        Input class idns:
+
         signal [numpy array] -- Signal to analyze
         nsec [float] -- Window length used for the analysis [s]
         sampling_freq [float] -- Sampling frequency [Hz]
         overlap [float] -- Overlap between windows [0-1]
         confidence [int] -- Confidence [90-95-98-99] [%]
+
+        Return:
+        idns.calc() -- Calculation
+        idns.get_base() -- Get informations about statistics of entire signal
+        idns.get_run() -- Get informations about run
+        idns.get_limits() -- Get limits of stationary
+        idns.get_bns() -- Get outcome of the test
+        idns.get_index() -- Get the index of non-stationary
+        idns.get_plot() -- Get the plot of the results
+        
         """
         self.signal = signal
         self.nsec = nsec
