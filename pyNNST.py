@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 
 class idns:
     def __init__(self, signal, nsec, sampling_freq, overlap, confidence):
+        """
+        Class idns:
+        signal [numpy array] -- Signal to analyze
+        nsec [float] -- Window length used for the analysis [s]
+        sampling_freq [float] -- Sampling frequency [Hz]
+        overlap [float] -- Overlap between windows [0-1]
+        confidence [int] -- Confidence [90-95-98-99] [%]
+        """
         self.signal = signal
         self.nsec = nsec
         self.sampling_freq = sampling_freq
