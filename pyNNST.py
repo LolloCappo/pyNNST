@@ -4,11 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class idns:
-    def __init__(self, signal, nsec, sampling_freq, overlap, confidence):
+    def __init__(self, data, nsec, sampling_freq, overlap, confidence):
         """        
         Input class idns:
 
-        signal [numpy array] -- Signal to analyze
+        data [numpy array] -- Signal to analyze
         nsec [float] -- Window length used for the analysis [s]
         sampling_freq [float] -- Sampling frequency [Hz]
         overlap [float] -- Overlap between windows [0-1]
@@ -24,7 +24,7 @@ class idns:
         idns.get_plot() -- Get the plot of the results
         
         """
-        self.signal = signal
+        self.data = data
         self.nsec = nsec
         self.sampling_freq = sampling_freq
         self.overlap = overlap
@@ -35,12 +35,12 @@ class idns:
             return None
         
     def calc(self):
-        self.N_pts = len(self.signal)
+        self.N_pts = len(self.data)
         self.dt = 1/self.sampling_freq            
         self.T = self.N_pts * self.dt - self.dt             
         self.time = np.linspace(0, self.T, self.N_pts)
-        self.ent_std = np.std(self.signal, ddof = 1) 
-        self.ent_mean = np.mean(self.signal)        
+        self.ent_std = np.std(self.data, ddof = 1) 
+        self.ent_mean = np.mean(self.data)        
         coeff = [1.645, 1.96, 2.326, 2.576]
         conf = [90, 95, 98, 99]
         self.alpha = coeff[conf.index(self.confidence)]
@@ -55,7 +55,7 @@ class idns:
         seg = int(np.ceil(self.N_pts / seg_pts))                  
         self.seg_time = np.linspace(0,self.T,seg)
         res = self.N_pts % seg_pts      
-        cls = np.array([self.signal[i:i + seg_pts] for i in range(0, self.N_pts-res, seg_pts)])
+        cls = np.array([self.data[i:i + seg_pts] for i in range(0, self.N_pts-res, seg_pts)])
 
         self.seg_std = np.std(cls, axis=1, ddof=1)
 
@@ -133,7 +133,7 @@ class idns:
     def get_plot(self):
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-        ax.plot(self.time, self.signal, color = 'darkgray', zorder = 1, label = 'Signal')
+        ax.plot(self.time, self.data, color = 'darkgray', zorder = 1, label = 'Signal')
         ax.plot(self.seg_time, self.ent_mean + self.seg_std, color = 'C0', zorder = 2, label = 'Segments STD')
         ax.hlines(self.ent_mean + self.ent_std, 0, self.T+self.dt, colors='C1', linestyles='solid', zorder = 3, label = 'STD')
         ax.hlines(self.ent_mean + self.boundUP, 0, self.T+self.dt, colors='C3', linestyles='dashed', zorder = 4, label = 'Boundaries')
