@@ -60,7 +60,7 @@ class idns:
         self.seg_std = np.std(cls, axis=1, ddof=1)
 
         if res != 0:
-            seg_res = signal[self.N_pts - res:self.N_pts]
+            seg_res = self.data[self.N_pts - res:self.N_pts]
             if len(seg_res) != 1:
                 seg_res_std = np.std(seg_res,ddof=1)
                 self.seg_std = np.append(self.seg_std,seg_res_std)
