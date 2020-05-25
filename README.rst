@@ -13,6 +13,7 @@ Here is a simple example on how to use the code:
 
 .. code-block:: python
 
+    import pyNNST
     import numpy as np
     import matplotlib.pyplot as plt
 
