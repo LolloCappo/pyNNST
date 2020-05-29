@@ -4,14 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class idns:
-    def __init__(self, data, nsec, sampling_freq, overlap, confidence):
+    def __init__(self, x, fs, nsec, noverlap, confidence):
         """        
         Input class idns:
 
-        data [numpy array] -- Signal to analyze
+        x [numpy array] -- Signal to analyze
+        fs [float] -- Sampling frequency [Hz]
         nsec [float] -- Window length used for the analysis [s]
-        sampling_freq [float] -- Sampling frequency [Hz]
-        overlap [float] -- Overlap between windows [0-1]
+        
+        noverlap [float] -- Overlap between windows [0-1]
         confidence [int] -- Confidence [90-95-98-99] [%]
 
         Return:
@@ -24,34 +25,34 @@ class idns:
         idns.get_plot() -- Get the plot of the results
         
         """
-        self.data = data
+        self.x = x
         self.nsec = nsec
-        self.sampling_freq = sampling_freq
-        self.overlap = overlap
+        self.fs = fs
+        self.noverlap = noverlap
         self.confidence = confidence
         
-        if self.nsec < 2/self.sampling_freq:
+        if self.nsec < 2/self.fs:
             print('Error: nsec should be at least twice the inverse of sampling frequency')
             return None
         
     def calc(self):
-        self.N_pts = len(self.data)
-        self.dt = 1/self.sampling_freq            
+        self.N_pts = len(self.x)
+        self.dt = 1/self.fs            
         self.T = self.N_pts * self.dt - self.dt             
         self.time = np.linspace(0, self.T, self.N_pts)
-        self.ent_std = np.std(self.data, ddof = 1) 
-        self.ent_mean = np.mean(self.data)        
+        self.ent_std = np.std(self.x, ddof = 1) 
+        self.ent_mean = np.mean(self.x)        
         coeff = [1.645, 1.96, 2.326, 2.576]
         conf = [90, 95, 98, 99]
         self.alpha = coeff[conf.index(self.confidence)]
-        self.data_base = {'N_pts':self.N_pts,
-                          'time':self.time,
-                          'std':self.ent_std,
-                          'mean':self.ent_mean,
-                          'alpha':self.alpha}
+        self.data = {'N_pts':self.N_pts,
+                     'time':self.time,
+                     'std':self.ent_std,
+                     'mean':self.ent_mean,
+                     'alpha':self.alpha}
         
-        wdw_pts = int(np.floor(self.sampling_freq * self.nsec)) 
-        seg_pts = wdw_pts - int(np.floor(wdw_pts * self.overlap)) 
+        wdw_pts = int(np.floor(self.fs * self.nsec)) 
+        seg_pts = wdw_pts - int(np.floor(wdw_pts * self.noverlap)) 
         seg = int(np.ceil(self.N_pts / seg_pts))                  
         self.seg_time = np.linspace(0,self.T,seg)
         res = self.N_pts % seg_pts      
