@@ -3,19 +3,49 @@ __version__ = '0.3'
 import numpy as np
 import matplotlib.pyplot as plt
 
-class idns:
-    def __init__(self, x, fs, nsec, noverlap, confidence):
-        """        
-        Input class idns:
+class Idns(object):
+    """
+    Non-stationarity index identification using modified run test, presented in [1,2,3].
 
-        x [numpy array] -- Signal to analyze
-        fs [float] -- Sampling frequency [Hz]
+    
+    References
+    ----------
+    [1] L. Capponi, M. Česnik, J. Slavič, F. Cianetti, M. Boltežar.
+        Non-stationarity index in vibration fatigue: Theoretical and experimental research.
+        International Journal of Fatigue 104, 221-230.
+    [2] M. Česnik, J. Slavič, L. Capponi, M. Palmieri, F. Cianetti, M. Boltežar.
+        The relevance of non-stationarities and non-Gaussianities in vibration fatigue.
+        MATEC Web of Conferences 165, 10011, 2018.
+    [3] Non-stationarity and non-Gaussianity in Vibration Fatigue.
+        J. Slavič, M. Česnik, L. Capponi, M. Palmieri, F. Cianetti, M. Boltežar.
+        Sensors and Instrumentation, Aircraft/Aerospace, Energy Harvesting & Dynamic, 2020.
+    """
+    def __init__(self, x, fs, nsec, noverlap, confidence):
+        """ 
+
+        Parameters
+        ----------
+        x : array_like
+            Time series of measurement values
+
+        fs : float
+            Sampling frequency of the `x` time series in units of Hz
+
+        nperseg : int
+            Length of each segment
+
         nsec [float] -- Window length used for the analysis [s]
         
+        noverlap: int, optional
+            Number of points to overlap between segments. If None,
+            ``noverlap = 0``.  Defaults to None.
+
         noverlap [float] -- Overlap between windows [0-1]
+        
         confidence [int] -- Confidence [90-95-98-99] [%]
 
-        Return:
+        Returns
+        -------
         idns.calc() -- Calculation
         idns.get_base() -- Get informations about statistics of entire signal
         idns.get_run() -- Get informations about run
