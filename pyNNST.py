@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class Idns(object):
     """
-    Non-stationarity index identification using modified run test, presented in [1,2,3].
+    Non-stationarity index identification using modified run test, as presented in [1,2,3].
 
     
     References
@@ -22,6 +22,7 @@ class Idns(object):
     """
     def __init__(self, x, fs, nsec, noverlap, confidence):
         """ 
+        Get needed values from reference object
 
         Parameters
         ----------
@@ -41,7 +42,7 @@ class Idns(object):
             ``noverlap = 0``.  Defaults to None.
 
         noverlap [float] -- Overlap between windows [0-1]
-        
+
         confidence [int] -- Confidence [90-95-98-99] [%]
 
         Returns
@@ -53,6 +54,12 @@ class Idns(object):
         idns.get_bns() -- Get outcome of the test
         idns.get_index() -- Get the index of non-stationary
         idns.get_plot() -- Get the plot of the results
+
+        Raises
+        ------
+        ValueError : minimum value for nperseg = 2 / fs 
+        ValueError : nperseg value not correct if compared to the length of x
+  
         
         """
         self.x = x
@@ -62,7 +69,7 @@ class Idns(object):
         self.confidence = confidence
         
         if self.nsec < 2/self.fs:
-            print('Error: nsec should be at least twice the inverse of sampling frequency')
+            raise ValueError('Error: nsec should be at least twice the inverse of sampling frequency')
             return None
         
     def calc(self):
@@ -124,7 +131,7 @@ class Idns(object):
         
         ## Stationary limits 
         if N == 0 or N == 1:
-            print('Error: check window length')
+            raise ValueError('Error: check window length')
             return None 
         
         self.run_mean = (2 * N1 * N0) / N + 1
@@ -146,8 +153,8 @@ class Idns(object):
         self.index = np.round( 100 * self.Nr / self.run_mean, 2)
         
     
-    def get_base(self):
-        return self.data_base
+    def get_data(self):
+        return self.data
         
     def get_run(self):        
         return self.run
