@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 
 class Idns(object):
     """
-    Non-stationarity index identification using modified run test, as presented in [1,2,3].
+    Non-stationarity index identification using modified run-test, as presented in [1,2,3].
+    Standard deviation of entire signal is compared to standard deviation of segments,
+    and the number of variations (i.e., runs) is compared to expected value of variations to obtain
+    the non-stationarity index.
 
     
     References
@@ -45,7 +48,19 @@ class Idns(object):
 
         confidence [int] -- Confidence [90-95-98-99] [%]
 
-        Returns
+        Properties
+        ----------
+        data    : array 1D
+                Signal values with time spacing dt
+        dt      : float
+                Time between discreete signal values    
+        moments : array 1D
+                Spectral moments from m0 to m4    
+        psd     : array 2D
+                Normalized power spectral density
+        t       : float
+                Length of signal in seconds, N * dt
+
         -------
         idns.calc() -- Calculation
         idns.get_base() -- Get informations about statistics of entire signal
