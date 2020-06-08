@@ -1,7 +1,7 @@
 ﻿Index of non-stationarity
 ---------------------------------------------
 
-Obtaining non-stationary index for time-series..
+Obtaining non-stationary index for time-series.
 
 .. code-block:: console
 
