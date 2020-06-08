@@ -40,23 +40,6 @@ Here is a simple example on how to use the code:
     index = example.get_index()      # Get the index of non-stationarity
     limits = example.get_limits()    # Get the limits outside of which the signal is non-stationary
 
-    segments_std, bound_dw, bound_up = example.get_segments() # Standard deviation of the segments
-    time_segments = np.linspace(0, T - dt, len(segments_std))  # Time vector of the segments
-
-    # Plot the results
-    fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
-    ax.plot(time, x, color = 'darkgray', zorder = 0, label = 'Signal')
-    ax.plot(time_segments, mean + segments_std, color = 'C0', zorder = 1, label = 'Segments std')
-    ax.hlines(mean + std, 0, T, colors='C1', linestyles='solid', zorder = 2, label = 'Signal std')
-    ax.hlines(mean + bound_dw, 0, T, colors='C3', linestyles='dashed', zorder = 3, label = 'Boundaries')
-    ax.hlines(mean + bound_up, 0, T, colors='C3', linestyles='dashed', zorder = 4)
-    ax.grid()
-    ax.legend(loc = 4)
-    ax.set_xlabel('Time [s]')
-    ax.set_ylabel('Amplitude [\]')
-    ax.set_title('Index: '+ str(index) + '%\n' + outcome)
-    
 
 Reference:
 
