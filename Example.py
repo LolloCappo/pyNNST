@@ -11,7 +11,7 @@ time = np.linspace(0, T - dt, T * fs)
 std = np.std(x, ddof = 1) 
 mean = np.mean(x) 
 
-example = nnst(x, nperseg = 2, noverlap = 0, confidence = 95)
+example = nnst(x, nperseg = 100, noverlap = 0, confidence = 95)
 example.idns()
 
 segments_std, bound_dw, bound_up = example.get_segments()
