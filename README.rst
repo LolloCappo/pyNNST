@@ -32,10 +32,10 @@ Here is a simple example on how to use the code:
     nperseg = 100
     noverlap = 0
     confidence = 95
-    example = Idns(x, nperseg = nerperseg, noverlap = noverlap, confidence = confidence)
+    example = nnst(x, nperseg = nerperseg, noverlap = noverlap, confidence = confidence)
     
     # Compute the run test for non-stationarity
-    example.nnst() 
+    example.idns() 
     outcome = example.get_outcome()  # Get the results of the test as a string
     index = example.get_index()      # Get the index of non-stationarity
     limits = example.get_limits()    # Get the limits outside of which the signal is non-stationary
