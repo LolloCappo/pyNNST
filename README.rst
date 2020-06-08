@@ -41,7 +41,7 @@ Here is a simple example on how to use the code:
     limits = example.get_limits()    # Get the limits outside of which the signal is non-stationary
 
     segments_std, bound_dw, bound_up = example.get_segments() # Standard deviation of the segments
-    time_segments = np.linspace(0, T - dt, len(segments[0]))  # Time vector of the segments
+    time_segments = np.linspace(0, T - dt, len(segments_std))  # Time vector of the segments
 
     # Plot the results
     fig = plt.figure()
