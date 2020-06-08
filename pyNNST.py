@@ -1,12 +1,13 @@
-__version__ = '0.3'
+__version__ = '0.4'
 
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.lib.stride_tricks import as_strided
 
-class Idns(object):
+class Idns():
     """
     Non-stationarity index identification using modified run-test, as presented in [1,2,3].
-    Standard deviation of entire signal is compared to standard deviation of segments,
+    Standard deviation of entire signal is compared to standard deviation of segmented signal,
     and the number of variations (i.e., runs) is compared to expected value of variations to obtain
     the non-stationarity index.
 
@@ -19,11 +20,13 @@ class Idns(object):
     [2] M. Česnik, J. Slavič, L. Capponi, M. Palmieri, F. Cianetti, M. Boltežar.
         The relevance of non-stationarities and non-Gaussianities in vibration fatigue.
         MATEC Web of Conferences 165, 10011, 2018.
-    [3] Non-stationarity and non-Gaussianity in Vibration Fatigue.
-        J. Slavič, M. Česnik, L. Capponi, M. Palmieri, F. Cianetti, M. Boltežar.
+    [3] J. Slavič, M. Česnik, L. Capponi, M. Palmieri, F. Cianetti, M. Boltežar.
+        Non-stationarity and non-Gaussianity in Vibration Fatigue.
         Sensors and Instrumentation, Aircraft/Aerospace, Energy Harvesting & Dynamic, 2020.
     """
-    def __init__(self, x, fs, nsec, noverlap, confidence):
+    
+    def __init__(self, x, nperseg, noverlap = 0, confidence = 95):
+        
         """ 
         Get needed values from reference object
 
@@ -32,169 +35,146 @@ class Idns(object):
         x : array_like
             Time series of measurement values
 
-        fs : float
-            Sampling frequency of the `x` time series in units of Hz
-
         nperseg : int
             Length of each segment
-
-        nsec [float] -- Window length used for the analysis [s]
         
         noverlap: int, optional
             Number of points to overlap between segments. If None,
-            ``noverlap = 0``.  Defaults to None.
+            "noverlap = 0". Defaults to None.
 
-        noverlap [float] -- Overlap between windows [0-1]
+        confidence: int, optional
+            Confidence interval [90-95-98-99] %. If None, 
+            "confidence = 95". Defaults to None.
+        
 
-        confidence [int] -- Confidence [90-95-98-99] [%]
-
-        Properties
-        ----------
-        data    : array 1D
-                Signal values with time spacing dt
-        dt      : float
-                Time between discreete signal values    
-        moments : array 1D
-                Spectral moments from m0 to m4    
-        psd     : array 2D
-                Normalized power spectral density
-        t       : float
-                Length of signal in seconds, N * dt
-
+        Methods
         -------
-        idns.calc() -- Calculation
-        idns.get_base() -- Get informations about statistics of entire signal
-        idns.get_run() -- Get informations about run
-        idns.get_limits() -- Get limits of stationary
-        idns.get_bns() -- Get outcome of the test
-        idns.get_index() -- Get the index of non-stationary
-        idns.get_plot() -- Get the plot of the results
+        ._windowing       : Windowing of the signal
+        
+        ._run_computation : Run computation of a 1D array
+        
+        .nnst()           : Computation of non-stationarity index
+        
+        .get_index()      : float
+                            Get the index of non-stationarity
+        .get_segments()   : list[1D array, float, float]
+                            Get segments standard deviations and lower and upper boundaries
+        .get_limits()     : list[float, float]
+                            Get lower and upper limits of non-stationarity
+        
+        .get_outcome()    : str
+                            Get the outcome of the non-stationary test
+
+
 
         Raises
         ------
-        ValueError : minimum value for nperseg = 2 / fs 
-        ValueError : nperseg value not correct if compared to the length of x
-  
+        ValueError : nperseg must be > 1
+        ValueError : nperseg value must be less then len(x)
+        ValueError : noverlap must be less than nperseg
+        ValueError : confidence must be in [90, 95, 98, 99]
         
         """
+        
         self.x = x
-        self.nsec = nsec
-        self.fs = fs
+        self.nperseg = nperseg
         self.noverlap = noverlap
         self.confidence = confidence
         
-        if self.nsec < 2/self.fs:
-            raise ValueError('Error: nsec should be at least twice the inverse of sampling frequency')
-            return None
+        if self.nperseg <= 1:
+            raise ValueError('Input error: nperseg must be > 1')
+            
+        if self.noverlap is None:
+            self.noverlap = 0
+        elif self.noverlap >= self.nperseg:
+            raise ValueError('Input error: noverlap must be less than nperseg.')
+            
+        if self.confidence is None:
+            self.confidence = 95    
+        elif self.confidence not in [90, 95, 98, 99]:
+            raise ValueError('Input error: confidence must be in [90, 95, 98, 99]')
+            
+            
+            
+    def _windowing(self, x, nperseg, noverlap):
+            
+        seg = nperseg - noverlap
+        new_shape = x.shape[:-1] + ((x.shape[-1] - noverlap) // seg, nperseg )
+        new_strides = (x.strides[:-1] + (seg * x.strides[-1],) + x.strides[-1:])
+        cls = as_strided(x, shape=new_shape, strides=new_strides)
+                
+        return cls
         
-    def calc(self):
-        self.N_pts = len(self.x)
-        self.dt = 1/self.fs            
-        self.T = self.N_pts * self.dt - self.dt             
-        self.time = np.linspace(0, self.T, self.N_pts)
-        self.ent_std = np.std(self.x, ddof = 1) 
-        self.ent_mean = np.mean(self.x)        
-        coeff = [1.645, 1.96, 2.326, 2.576]
-        conf = [90, 95, 98, 99]
-        self.alpha = coeff[conf.index(self.confidence)]
-        self.data = {'N_pts':self.N_pts,
-                     'time':self.time,
-                     'std':self.ent_std,
-                     'mean':self.ent_mean,
-                     'alpha':self.alpha}
-        
-        wdw_pts = int(np.floor(self.fs * self.nsec)) 
-        seg_pts = wdw_pts - int(np.floor(wdw_pts * self.noverlap)) 
-        seg = int(np.ceil(self.N_pts / seg_pts))                  
-        self.seg_time = np.linspace(0,self.T,seg)
-        res = self.N_pts % seg_pts      
-        cls = np.array([self.data[i:i + seg_pts] for i in range(0, self.N_pts-res, seg_pts)])
-
-        self.seg_std = np.std(cls, axis=1, ddof=1)
-
-        if res != 0:
-            seg_res = self.data[self.N_pts - res:self.N_pts]
-            if len(seg_res) != 1:
-                seg_res_std = np.std(seg_res,ddof=1)
-                self.seg_std = np.append(self.seg_std,seg_res_std)
-    
-        cls_std = np.std(self.seg_std, ddof = 1)
-    
-        self.boundUP = self.ent_std + cls_std
-        self.boundDW = self.ent_std - cls_std
-        
-        rn = np.empty(seg)
-        for i in range(0, seg):
-            if self.seg_std[i] > self.boundUP or self.seg_std[i] < self.boundDW:
-                rn[i] = 1
-            else:
-                rn[i] = 0
-
-        N1 = N0 = 0
-        for i in range(0, seg):
-            if rn[i] == 1.:
+    def _run_computation(self, y, lower, upper):
+            
+        run = np.empty(len(y))
+        N1 = N0 = Nr = 0
+            
+        for i in range(0, len(y)):
+            if y[i] > upper or y[i] < lower:
+                run[i] = 1
                 N1 += 1
             else:
+                run[i] = 0
                 N0 += 1
+                    
+        if N1 + N0 == 0 or N1 + N0 == 1:
+            raise ValueError('Error: nperseg value must be less then len(x)') 
+                     
+            
+        for i in range(1, len(y)):
+            if run[i] != run[i-1]:
+                Nr += 1
         
-        N = N1 + N0
-        self.Nr = 0
-
-        for i in range(1, seg):
-            if rn[i] != rn[i-1]:
-                self.Nr += 1
+               
+        run_mean = (2 * N1 * N0) / (N1 + N0) + 1
+        run_var = (2 * N1 * N0 * (2 * N1 * N0 - (N1 + N0))) / ((N1 + N0)**2 * (N1 + N0) - 1)
+            
+        return Nr, run_mean, run_var
         
-        ## Stationary limits 
-        if N == 0 or N == 1:
-            raise ValueError('Error: check window length')
-            return None 
+    def nnst(self):
         
-        self.run_mean = (2 * N1 * N0) / N + 1
-        self.run_var = (2 * N1 * N0 * (2 * N1 * N0 - N)) / (N**2 * (N - 1))
+        N = len(self.x)
+        std_entire = np.std(self.x, ddof = 1) 
         
-        self.run = {'run': self.Nr, 'run_mean': self.run_mean, 'run_var': self.run_var}
+        cls = self._windowing(self.x,self.nperseg,self.noverlap)
         
-        self.lim_up = self.run_mean + self.alpha * np.sqrt(self.run_var)
-        self.lim_dw = self.run_mean - self.alpha * np.sqrt(self.run_var)
-
-        self.index_up = np.round(100 * self.lim_up / self.run_mean, 2)
-        self.index_dw = np.round(100 * self.lim_dw / self.run_mean, 2)
+        self.std_seg = np.std(cls, axis=1, ddof=1)
+        if N % self.nperseg != 0:
+            res = self.x[N - N % self.nperseg:N]
+            if len(res) != 1:
+                self.std_seg = np.append(self.std_seg, np.std(res,ddof=1))
+                
+        self.std_UP = std_entire + np.std(self.std_seg, ddof = 1)
+        self.std_DW = std_entire - np.std(self.std_seg, ddof = 1)
         
-        if self.Nr >= self.lim_dw and self.Nr <= self.lim_up:   
-            self.bns = 'Stationary'
+        self.Nr, self.run_mean, self.run_var = self._run_computation(self.std_seg, self.std_DW, self.std_UP)
+        
+        coeff = [1.645, 1.96, 2.326, 2.576]
+        conf = [90, 95, 98, 99]
+        alpha = coeff[conf.index(self.confidence)]
+        
+        lim_up = self.run_mean + alpha * np.sqrt(self.run_var)
+        lim_dw = self.run_mean - alpha * np.sqrt(self.run_var)
+        
+        self.index_up = np.round(100 * lim_up / self.run_mean, 2)
+        self.index_dw = np.round(100 * lim_dw / self.run_mean, 2)
+        
+        if self.Nr >= lim_dw and self.Nr <= lim_up:   
+            self.outcome = 'Stationary'
         else:
-            self.bns = 'Non-stationary' 
+            self.outcome = 'Non-stationary' 
             
         self.index = np.round( 100 * self.Nr / self.run_mean, 2)
         
+    def get_segments(self):
+        return [self.std_seg, self.std_DW, self.std_UP]
     
-    def get_data(self):
-        return self.data
-        
-    def get_run(self):        
-        return self.run
-        
     def get_limits(self):
         return [self.index_dw, self.index_up]
-
-    def get_bns(self):
-        return self.bns
     
     def get_index(self):
         return self.index
     
-    def get_plot(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-        ax.plot(self.time, self.data, color = 'darkgray', zorder = 1, label = 'Signal')
-        ax.plot(self.seg_time, self.ent_mean + self.seg_std, color = 'C0', zorder = 2, label = 'Segments STD')
-        ax.hlines(self.ent_mean + self.ent_std, 0, self.T+self.dt, colors='C1', linestyles='solid', zorder = 3, label = 'STD')
-        ax.hlines(self.ent_mean + self.boundUP, 0, self.T+self.dt, colors='C3', linestyles='dashed', zorder = 4, label = 'Boundaries')
-        ax.hlines(self.ent_mean + self.boundDW, 0, self.T+self.dt, colors='C3', linestyles='dashed', zorder = 5)
-        ax.legend(loc=4)
-        ax.grid()
-        ax.set_xlim([0,self.T+self.dt])
-        ax.set_xlabel('Time [s]')
-        ax.set_ylabel('Amplitude [\]')
-        ax.set_title('Index: '+str(self.index) + '%\n' + self.bns)
-        plt.show()
+    def get_outcome(self):
+        return self.outcome
