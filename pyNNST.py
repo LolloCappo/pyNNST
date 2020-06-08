@@ -3,7 +3,7 @@ __version__ = '0.4'
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Idns():
+class nnst():
     """
     Non-stationarity index identification using modified run-test, as presented in [1,2,3].
     Standard deviation of entire signal is compared to standard deviation of segmented signal,
@@ -52,7 +52,7 @@ class Idns():
         
         ._run_computation : Run computation of a 1D array
         
-        .nnst()           : Computation of non-stationarity index
+        .idns()           : Computation of non-stationarity index
         
         .get_index()      : float
                             Get the index of non-stationarity
@@ -131,7 +131,7 @@ class Idns():
             
         return Nr, run_mean, run_var
         
-    def nnst(self):
+    def idns(self):
         
         N = len(self.x)
         std_entire = np.std(self.x, ddof = 1) 
