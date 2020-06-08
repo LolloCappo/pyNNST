@@ -20,24 +20,30 @@ Here is a simple example on how to use the code:
     from numpy.lib.stride_tricks import as_strided
 
     # Define a sample signal x
-    T = 20 # Time length of x
-    fs = 400 # Sampling frequency of x
-    dt = 1 / fs
-    x = np.random.rand(T * fs)
+    T = 20                                # Time length of x
+    fs = 400                              # Sampling frequency of x
+    dt = 1 / fs                           # Time between discreete signal values
+    x = np.random.rand(T * fs)            # Signal
     time = np.linspace(0, T - dt, T * fs) # Time vector
-    std = np.std(x, ddof = 1) # Standard deviation of x
-    mean = np.mean(x) # Mean value of x
+    std = np.std(x, ddof = 1)             # Standard deviation of x
+    mean = np.mean(x)                     # Mean value of x
 
-    a = Idns(x, nperseg = 2, noverlap = 0, confidence = 95)
-    a.nnst()
+    # Class initialization
+    nperseg = 100
+    noverlap = 0
+    confidence = 95
+    example = Idns(x, nperseg = nerperseg, noverlap = noverlap, confidence = confidence)
+    
+    # Compute the run test for non-stationarity
+    example.nnst() 
+    outcome = example.get_outcome()  # Get the results of the test as a string
+    index = example.get_index()      # Get the index of non-stationarity
+    limits = example.get_limits()    # Get the limits outside of which the signal is non-stationary
 
-    segments_std, bound_dw, bound_up = a.get_segments()
-    time_segments = np.linspace(0, T - dt, len(segments[0]))
+    segments_std, bound_dw, bound_up = example.get_segments() # Standard deviation of the segments
+    time_segments = np.linspace(0, T - dt, len(segments[0]))  # Time vector of the segments
 
-    limits = a.get_limits()
-    outcome = a.get_outcome()
-    index = a.get_index()
-
+    # Plot the results
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     ax.plot(time, x, color = 'darkgray', zorder = 0, label = 'Signal')
