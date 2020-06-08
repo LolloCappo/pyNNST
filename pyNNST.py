@@ -2,7 +2,6 @@ __version__ = '0.4'
 
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.lib.stride_tricks import as_strided
 
 class Idns():
     """
@@ -101,7 +100,7 @@ class Idns():
         seg = nperseg - noverlap
         new_shape = x.shape[:-1] + ((x.shape[-1] - noverlap) // seg, nperseg )
         new_strides = (x.strides[:-1] + (seg * x.strides[-1],) + x.strides[-1:])
-        cls = as_strided(x, shape=new_shape, strides=new_strides)
+        cls = np.lib.stride_tricks.as_strided(x, shape=new_shape, strides=new_strides)
                 
         return cls
         
