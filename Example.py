@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.lib.stride_tricks import as_strided
 from pyNNST import *
 
 
