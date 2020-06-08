@@ -13,18 +13,20 @@ Here is a simple example on how to use the code:
 
 .. code-block:: python
 
+    # Import packages 
     from pyNNST import *
     import numpy as np
     import matplotlib.pyplot as plt
     from numpy.lib.stride_tricks import as_strided
 
-    T = 20
-    fs = 400
+    # Define a sample signal x
+    T = 20 # Time length of x
+    fs = 400 # Sampling frequency of x
     dt = 1 / fs
     x = np.random.rand(T * fs)
-    time = np.linspace(0, T - dt, T * fs)
-    std = np.std(x, ddof = 1) 
-    mean = np.mean(x) 
+    time = np.linspace(0, T - dt, T * fs) # Time vector
+    std = np.std(x, ddof = 1) # Standard deviation of x
+    mean = np.mean(x) # Mean value of x
 
     a = Idns(x, nperseg = 2, noverlap = 0, confidence = 95)
     a.nnst()
