@@ -11,15 +11,15 @@ time = np.linspace(0, T - dt, T * fs)
 std = np.std(x, ddof = 1) 
 mean = np.mean(x) 
 
-a = Idns(x, nperseg = 2, noverlap = 0, confidence = 95)
-a.nnst()
+example = nnst(x, nperseg = 2, noverlap = 0, confidence = 95)
+example.idns()
 
-segments_std, bound_dw, bound_up = a.get_segments()
+segments_std, bound_dw, bound_up = example.get_segments()
 time_segments = np.linspace(0, T - dt, len(segments_std))
 
-limits = a.get_limits()
-outcome = a.get_outcome()
-index = a.get_index()
+limits = example.get_limits()
+outcome = example.get_outcome()
+index = example.get_index()
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
