@@ -68,6 +68,9 @@ class nnst():
 
         Raises
         ------
+        ValueError : nperseg must be integer
+        ValueError : noverlap must be integer
+        ValueError : confidence must be integer
         ValueError : nperseg must be > 1
         ValueError : nperseg value must be less then len(x)
         ValueError : noverlap must be less than nperseg
@@ -79,6 +82,13 @@ class nnst():
         self.nperseg = nperseg
         self.noverlap = noverlap
         self.confidence = confidence
+        
+        if not isinstance(self.nperseg, int):
+            raise ValueError('Input error: nperseg must be integer')
+        if not isinstance(self.noverlap, int):
+            raise ValueError('Input error: noverlap must be integer')
+        if not isinstance(self.confidence, int):
+            raise ValueError('Input error: confidence must be integer')
         
         if self.nperseg <= 1:
             raise ValueError('Input error: nperseg must be > 1')
