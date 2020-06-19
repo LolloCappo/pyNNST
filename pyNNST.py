@@ -1,7 +1,6 @@
 __version__ = '0.1'
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 class nnst():
     """
