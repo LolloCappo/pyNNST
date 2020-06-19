@@ -35,7 +35,7 @@ Here is a simple example on how to use the code:
     mean = np.mean(x)                     # Mean value of x
 
     # Class initialization
-    example = nnst(x, nperseg = 100, noverlap = 0, confidence = 95)
+    example = pyNNST.nnst(x, nperseg = 100, noverlap = 0, confidence = 95)
     
     # Compute the run test for non-stationarity
     example.idns() 
