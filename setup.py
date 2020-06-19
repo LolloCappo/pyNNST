@@ -24,5 +24,5 @@ setup(name='pyNNST',
       url='https://github.com/LolloCappo/pyNNST',
       py_modules=['pyNNST'],
       long_description=readme,
-      install_requires=requirements
+      install_requires='numpy'
       )
