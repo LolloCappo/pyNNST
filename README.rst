@@ -45,5 +45,5 @@ Here is a simple example on how to use the code:
 
 Reference:
 
-Non-stationarity index in vibration fatigue: Theoretical and experimental research; L. Capponi, M. Česnik, J. Slavič, F. Cianetti, M. Boltežar; International Journal of Fatigue 104, 221-230
+Non-stationarity index in vibration fatigue: Theoretical and experimental research; L. Capponi, M. Cesnik, J. Slavic, F. Cianetti, M. Boltezar; International Journal of Fatigue 104, 221-230
 https://www.sciencedirect.com/science/article/abs/pii/S014211231730316X
