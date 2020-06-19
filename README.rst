@@ -3,7 +3,14 @@
 
 Obtaining non-stationary index for time-series.
 
+Installing this package
+-----------------------
+
+Use `pip` to install it by:
+
 .. code-block:: console
+
+    $ pip install pyLIA
 
 
 Simple examples
