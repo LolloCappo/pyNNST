@@ -23,7 +23,6 @@ Here is a simple example on how to use the code:
     # Import packages 
     import pyNNST
     import numpy as np
-    import matplotlib.pyplot as plt
 
     # Define a sample signal x
     T = 20                                # Time length of x
