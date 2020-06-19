@@ -1,4 +1,4 @@
-﻿Index of non-stationarity
+Index of non-stationarity
 ---------------------------------------------
 
 Obtaining non-stationary index for time-series.
