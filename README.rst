@@ -1,5 +1,7 @@
 Index of non-stationarity
 ---------------------------------------------
+.. image:: https://zenodo.org/badge/243275920.svg
+   :target: https://zenodo.org/badge/latestdoi/243275920
 
 Obtaining non-stationary index for time-series.
 
