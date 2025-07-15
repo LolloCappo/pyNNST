@@ -36,7 +36,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/project/pyNNST/  # Replace YOURPROJECT
+      url: https://pypi.org/project/pyNNST/
 
     steps:
       - name: Retrieve release distributions
